@@ -10,21 +10,26 @@ def run_yearly_forecast():
     df = pd.read_csv("DatasetSIH1647.csv")
     df.set_index('Commodities', inplace=True)
     df = df.T
-    df.index = pd.date_range(start='2014', periods=len(df), freq='YE')
+    df.index = pd.date_range(start='2014', periods=len(df), freq='A')  # 'A' = year-end frequency
     df = df.ffill()
     commodities = df.columns.tolist()
 
     selected = st.selectbox("Select a Commodity (Yearly)", commodities, key="yearly_select")
     if st.button("Forecast Yearly"):
         data = df[selected]
-        model = SARIMAX(data, order=(1, 1, 1))  # ✅ FIXED: Removed seasonal_order
+
+        model = SARIMAX(data, order=(1, 1, 1))
         result = model.fit(disp=False)
         forecast = result.get_forecast(steps=5)
         predicted = forecast.predicted_mean
 
-        years = pd.date_range(start='2025', periods=5, freq='YE')
+        # ✅ Define years AFTER forecast is generated
+        years = pd.date_range(start=data.index[-1] + pd.DateOffset(years=1), periods=5, freq='A')
+
+        # Plotting
         st.line_chart(pd.DataFrame({f"{selected} Forecast": predicted}, index=years))
-        st.write(pd.DataFrame({'Year': years, 'Forecast Price': predicted.values}))
+        st.write(pd.DataFrame({'Year': years.year, 'Forecast Price': predicted.values}))
+
         rmse = np.sqrt(((data - result.fittedvalues) ** 2).mean())
         st.success(f"Training RMSE: {rmse:.2f}")
 
