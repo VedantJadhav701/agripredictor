@@ -77,7 +77,7 @@ with st.sidebar:
         st.rerun()
 
     with st.expander("👤 Profile"):
-        st.markdown(f"**👨‍🌾 Name:** {user['name']}")
+        st.markdown(f"**👨‍🌾 Name:** {user.get('name', 'Unknown')}")
         st.markdown(f"**📧 Email:** {user['email']}")
         st.markdown(f"**📱 Phone:** {user['phone']}")
         st.markdown(f"**🌐 Nationality:** {user['nationality']}")
